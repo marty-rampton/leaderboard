@@ -4,6 +4,7 @@ import {
   createUser,
   createScore,
   getLeaderboard,
+  getUserTopScore,
 } from "./db";
 import { create } from "node:domain";
 
@@ -76,6 +77,27 @@ app.get("/leaderboard", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "failed to fetch leaderboard" });
+  }
+});
+
+app.get("/users/:id/top-score", async (req, res) => {
+  try {
+    const userId = Number(req.params.id);
+
+    if (isNaN(userId)) {
+      return res.status(400).json({ error: "invalid userId" });
+    }
+
+    const result = await getUserTopScore(userId);
+
+    if (!result) {
+      return res.status(404).json({ error: "user not found" });
+    }
+
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "failed to fetch user top score" });
   }
 });
 

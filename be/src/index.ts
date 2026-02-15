@@ -1,5 +1,10 @@
 import express from "express";
-import { getAllUsers, createUser } from "./db";
+import { 
+  getAllUsers, 
+  createUser,
+  createScore,
+  getLeaderboard,
+} from "./db";
 import { create } from "node:domain";
 
 const app = express();
@@ -40,6 +45,37 @@ app.post("/users", async (req, res) => {
     }
 
     res.status(500).json({ error: "failed to create user" });
+  }
+});
+
+app.post("/scores", async (req, res) => {
+  try {
+    const { userId, score } = req.body;
+
+    if (userId === undefined || score === undefined) {
+      return res.status(400).json({ error: "userId and score are required" });
+    }
+
+    const newScore = await createScore(userId, score);
+    res.status(201).json(newScore);
+  } catch (err: any) {
+    console.error(err);
+
+    if (err.code === "23503") {
+      return res.status(400).json({ error: "invalid userId" });
+    }
+
+    res.status(500).json({ error: "failed to create score" });
+  }
+});
+
+app.get("/leaderboard", async (req, res) => {
+  try {
+    const leaderboard = await getLeaderboard();
+    res.json(leaderboard);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "failed to fetch leaderboard" });
   }
 });
 

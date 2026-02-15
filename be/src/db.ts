@@ -29,3 +29,23 @@ export async function createUser(username: string) {
   );
   return result.rows[0];
 }
+
+export async function createScore(userId: number, score: number) {
+  const result = await pool.query(
+    "INSERT INTO scores (user_id, score) VALUES ($1, $2) RETURNING *",
+    [userId, score]
+  );
+  return result.rows[0];
+}
+
+export async function getLeaderboard() {
+  const result = await pool.query(`
+    SELECT users.username, scores.score
+    FROM scores
+    JOIN users ON scores.user_id = users.id
+    ORDER BY scores.score DESC
+    LIMIT 10
+  `);
+
+  return result.rows;
+}

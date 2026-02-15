@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { getAllUsers, createUser, getUserTopScore } from "../db";
+import { createUserSchema } from "../validation/users";
 
 const router = Router();
 
@@ -15,11 +16,15 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { username } = req.body;
+    const parsed = createUserSchema.safeParse(req.body);
 
-    if (!username) {
-      return res.status(400).json({ error: "username is required" });
-    }
+  if (!parsed.success) {
+    return res.status(400).json({
+      error: parsed.error.issues[0]?.message || "invalid input",
+    });
+  }
+
+const { username } = parsed.data;
 
     const newUser = await createUser(username);
     res.status(201).json(newUser);

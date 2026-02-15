@@ -4,7 +4,7 @@ import { pool } from "../index";
 
 async function initDatabase() {
   try {
-    const schemaPath = path.resolve(__dirname, "../../../db/schema.sql");
+    const schemaPath = path.resolve(__dirname, "../schema.sql");
 
     const schema = fs.readFileSync(schemaPath, "utf-8");
 

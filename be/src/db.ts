@@ -40,10 +40,11 @@ export async function createScore(userId: number, score: number) {
 
 export async function getLeaderboard() {
   const result = await pool.query(`
-    SELECT users.username, scores.score
+    SELECT users.username, MAX(scores.score) AS score
     FROM scores
     JOIN users ON scores.user_id = users.id
-    ORDER BY scores.score DESC
+    GROUP BY users.id, users.username
+    ORDER BY score DESC
     LIMIT 10
   `);
 

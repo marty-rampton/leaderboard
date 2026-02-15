@@ -1,15 +1,20 @@
 import { Router } from "express";
 import { createScore } from "../db";
+import { createScoreSchema } from "../validation/scores";
 
 const router = Router();
 
 router.post("/", async (req, res) => {
   try {
-    const { userId, score } = req.body;
+    const parsed = createScoreSchema.safeParse(req.body);
 
-    if (userId === undefined || score === undefined) {
-      return res.status(400).json({ error: "userId and score are required" });
-    }
+  if (!parsed.success) {
+    return res.status(400).json({
+      error: parsed.error.issues[0]?.message || "Invalid input",
+    });
+  }
+
+const { userId, score } = parsed.data;
 
     const newScore = await createScore(userId, score);
     res.status(201).json(newScore);

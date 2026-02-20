@@ -5,7 +5,7 @@ RESTful leaderboard backend built with Express, TypeScript, and PostgreSQL, feat
 ## Quick Start (Docker)
 
 ```bash
-cd be
+cd leaderboard/be
 cp .env.docker.example .env.docker
 docker compose up --build
 ```

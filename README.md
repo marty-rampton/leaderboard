@@ -214,3 +214,12 @@ curl http://localhost:3001/users/1/top-score
 
 - `idx_scores_user_id` on `scores(user_id)`
 - `idx_scores_score` on `scores(score DESC)`
+
+## Reset database
+
+To remove all data and start fresh:
+
+```bash
+docker compose down -v
+docker compose up --build
+```

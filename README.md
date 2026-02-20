@@ -1,173 +1,177 @@
-# Leaderboard Backend
+# Leaderboard API
 
-A production-style leaderboard backend built with Node.js, Express, PostgreSQL, and TypeScript.
-
-This service allows users to register, submit scores, and view ranked leaderboard results.
+Express + TypeScript + PostgreSQL backend for a simple game leaderboard.
 
 ## Features
 
-- Create users
-- Submit scores
-- Retrieve leaderboard rankings
-- Retrieve a user's top score
-- Input validation using Zod
-- PostgreSQL relational schema with foreign keys
-- Indexed queries for performance
-- Environment-based configuration
-- Automatic schema initialization
+- Create and list users
+- Submit scores for users
+- Fetch leaderboard (top score per user)
+- Fetch a user's top score
+- Validate inputs with Zod
+- Auto-create DB schema via PostgreSQL init scripts (Docker)
 
 ## Tech Stack
 
 - Node.js
-- Express
 - TypeScript
+- Express
 - PostgreSQL
-- Zod validation
-- dotenv
-- WSL (Linux development environment)
+- Zod
+- Docker / Docker Compose
 
-## Project Structure
+## Project Layout
 
-```
-src/
-  db/
-    index.ts
-    scripts/init.ts
-  routes/
-    users.ts
-    scores.ts
-    leaderboard.ts
-  validation/
-    users.ts
-    scores.ts
-  index.ts
-
-db/
-  schema.sql
+```text
+be/
+  src/
+    server.ts
+    routes/
+    db/
+    validation/
+  db/init/
+    001_create_users.sql
+    002_create_scores.sql
+    003_create_scores_indexes.sql
+  docker-compose.yml
+  Dockerfile
 ```
 
-## Setup
+## Environment Variables
 
-### 1. Install dependencies
+Backend env file: `be/.env` (local) or `be/.env.docker` (Docker Compose).
 
-```bash
-npm install
-```
-
-### 2. Configure environment variables
-
-Create `.env` file:
+Example values:
 
 ```env
+PORT=3001
 DB_USER=postgres
 DB_HOST=localhost
+DB_URL=postgres://postgres:postgres@localhost:5432/leaderboard
 DB_NAME=leaderboard
-DB_PASSWORD=yourpassword
+DB_PASSWORD=postgres
 DB_PORT=5432
 ```
 
-### 3. Initialize database schema
+## Run Locally (without Docker)
+
+1. Start PostgreSQL and create a database named `leaderboard`.
+2. Copy env file:
+   ```bash
+   cd be
+   cp .env.example .env
+   ```
+3. Install dependencies and run:
+   ```bash
+   npm install
+   npm run dev
+   ```
+4. Apply SQL in `be/db/init` to your local database (in order):
+   - `001_create_users.sql`
+   - `002_create_scores.sql`
+   - `003_create_scores_indexes.sql`
+
+Server default: `http://localhost:3001`
+
+## Run with Docker Compose
+
+From `be/`:
 
 ```bash
-npm run db:init
+cp .env.docker.example .env.docker
+docker compose up --build
 ```
 
-### 4. Run server
+This starts:
 
-```bash
-npm run dev
-```
+- PostgreSQL on `localhost:5432`
+- API on `http://localhost:3001`
 
-Server runs at:
-
-```
-http://localhost:3001
-```
+The SQL files in `be/db/init` are executed automatically when the Postgres container initializes.
 
 ## API Endpoints
 
-### Create user
+Base URL: `http://localhost:3001`
 
+### Health
+
+- `GET /health`
+- Response:
+  ```json
+  { "status": "ok" }
+  ```
+
+### Users
+
+- `GET /users` - list all users
+- `POST /users` - create user
+  - Body:
+    ```json
+    { "username": "marty_01" }
+    ```
+  - Rules:
+    - 1-32 chars
+    - letters, numbers, underscore only
+- `GET /users/:id/top-score` - get user top score
+
+### Scores
+
+- `POST /scores` - submit score
+  - Body:
+    ```json
+    { "userId": 1, "score": 250 }
+    ```
+  - Rules:
+    - `userId`: positive integer
+    - `score`: integer, `0..1000000000`
+
+### Leaderboard
+
+- `GET /leaderboard`
+- Optional query:
+  - `limit` (integer `1..100`, default `10`)
+- Example:
+  - `GET /leaderboard?limit=5`
+
+## Example cURL
+
+```bash
+# health
+curl http://localhost:3001/health
+
+# create user
+curl -X POST http://localhost:3001/users \
+  -H "Content-Type: application/json" \
+  -d '{"username":"marty_01"}'
+
+# submit score
+curl -X POST http://localhost:3001/scores \
+  -H "Content-Type: application/json" \
+  -d '{"userId":1,"score":250}'
+
+# top 5 leaderboard entries
+curl "http://localhost:3001/leaderboard?limit=5"
+
+# top score for user 1
+curl http://localhost:3001/users/1/top-score
 ```
-POST /users
-```
-
-Body:
-
-```json
-{
-  "username": "marty"
-}
-```
-
----
-
-### Submit score
-
-```
-POST /scores
-```
-
-Body:
-
-```json
-{
-  "userId": 1,
-  "score": 250
-}
-```
-
----
-
-### Get leaderboard
-
-```
-GET /leaderboard
-```
-
----
-
-### Get user's top score
-
-```
-GET /users/:id/top-score
-```
-
----
 
 ## Database Schema
 
-Two tables:
+### `users`
 
-**Users**
-- id (primary key)
-- username (unique)
-- created_at
+- `id SERIAL PRIMARY KEY`
+- `username TEXT UNIQUE NOT NULL`
+- `created_at TIMESTAMP DEFAULT NOW()`
 
-**Scores**
-- id (primary key)
-- user_id (foreign key)
-- score
-- created_at
+### `scores`
 
-Indexes optimize leaderboard queries.
+- `id SERIAL PRIMARY KEY`
+- `user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE`
+- `score INTEGER NOT NULL`
+- `created_at TIMESTAMP DEFAULT NOW()`
 
----
+### Indexes
 
-## Development Environment
-
-Built and tested using:
-
-- Ubuntu (WSL)
-- PostgreSQL
-- Node.js (nvm)
-
----
-
-## Future Improvements
-
-- Authentication
-- Rate limiting
-- Pagination
-- Docker containerization
-- Deployment to cloud provider
+- `idx_scores_user_id` on `scores(user_id)`
+- `idx_scores_score` on `scores(score DESC)`

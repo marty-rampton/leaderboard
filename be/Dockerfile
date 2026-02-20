@@ -8,13 +8,16 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm install --omit-dev
 
 # Copy rest of source code
 COPY . .
+
+# Build TypeScript
+RUN npm run build
 
 # Expose port
 EXPOSE 3001
 
 # Start server
-CMD ["npm", "run", "dev"]
+CMD ["node", "dist/server.js"]

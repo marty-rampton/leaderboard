@@ -2,6 +2,17 @@
 
 RESTful leaderboard backend built with Express, TypeScript, and PostgreSQL, featuring Dockerized local development and production-style database initialization.
 
+It simulates a production-style leaderboard system for a game, supporting user creation, score submission, and leaderboard queries.
+
+## Tech Stack
+
+- Node.js
+- TypeScript
+- Express
+- PostgreSQL
+- Zod
+- Docker / Docker Compose
+
 ## Quick Start (Docker)
 
 ```bash
@@ -10,25 +21,107 @@ cp .env.docker.example .env.docker
 docker compose up --build
 ```
 
-Then open:
+Once the containers start, verify the API is running:
 
-http://localhost:3001/health
+## Example Usage
 
-## Purpose
+The following examples demonstrate basic interaction with the API using `curl`.
 
-This project was built as a portfolio backend service to demonstrate professional backend development practices, including REST API design, relational database modeling, input validation, and containerized local development.
+### Health Check
 
-It simulates a production-style leaderboard system for a game, supporting user creation, score submission, and leaderboard queries.
+Verify that the backend and database are running:
 
-## Engineering Practices Demonstrated
+```bash
+curl http://localhost:3001/health
+```
 
-- RESTful API design
-- Relational database schema design
-- Input validation and error handling
-- Environment-based configuration
-- Containerized development with Docker Compose
-- Database initialization via migration-style SQL scripts
-- Separation of concerns (routes, validation, database layers)
+Expected response:
+
+```json
+{
+  "status": "ok",
+  "database": "connected"
+}
+```
+
+---
+
+### Create a User
+
+```bash
+curl -X POST http://localhost:3001/users \
+  -H "Content-Type: application/json" \
+  -d '{"username":"demo_user"}'
+```
+
+Example response:
+
+```json
+{
+  "id": 1,
+  "username": "demo_user",
+  "created_at": "2026-02-20T18:25:43.511Z"
+}
+```
+
+---
+
+### Submit a Score
+
+```bash
+curl -X POST http://localhost:3001/scores \
+  -H "Content-Type: application/json" \
+  -d '{"userId":1,"score":250}'
+```
+
+Example response:
+
+```json
+{
+  "id": 1,
+  "user_id": 1,
+  "score": 250,
+  "created_at": "2026-02-20T18:26:10.112Z"
+}
+```
+
+---
+
+### Fetch Leaderboard
+
+```bash
+curl http://localhost:3001/leaderboard
+```
+
+Example response:
+
+```json
+[
+  {
+    "user_id": 1,
+    "username": "demo_user",
+    "top_score": 250
+  }
+]
+```
+
+---
+
+### Fetch Top Score for a User
+
+```bash
+curl http://localhost:3001/users/1/top-score
+```
+
+Example response:
+
+```json
+{
+  "user_id": 1,
+  "username": "demo_user",
+  "top_score": 250
+}
+```
 
 ## Architecture
 
@@ -41,6 +134,16 @@ The service follows a typical layered backend structure:
 
 PostgreSQL initialization scripts automatically create tables and indexes when the container starts.
 
+## Engineering Practices Demonstrated
+
+- RESTful API design
+- Relational database schema design
+- Input validation and error handling
+- Environment-based configuration
+- Containerized development with Docker Compose
+- Database initialization via migration-style SQL scripts
+- Separation of concerns (routes, validation, database layers)
+
 ## Features
 
 - Create and list users
@@ -49,15 +152,6 @@ PostgreSQL initialization scripts automatically create tables and indexes when t
 - Fetch a user's top score
 - Validate inputs with Zod
 - Auto-create DB schema via PostgreSQL init scripts (Docker)
-
-## Tech Stack
-
-- Node.js
-- TypeScript
-- Express
-- PostgreSQL
-- Zod
-- Docker / Docker Compose
 
 ## Project Layout
 
@@ -223,3 +317,7 @@ To remove all data and start fresh:
 docker compose down -v
 docker compose up --build
 ```
+
+## Purpose
+
+This project was built as a portfolio backend service to demonstrate professional backend development practices, including REST API design, relational database modeling, input validation, and containerized local development.

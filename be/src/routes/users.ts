@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getAllUsers, createUser, getUserTopScore } from "../db";
+import { getAllUsers, createUser, getUserTopScore } from "../db/queries/users";
 import { createUserSchema } from "../validation/users";
 
 const router = Router();
@@ -18,13 +18,13 @@ router.post("/", async (req, res) => {
   try {
     const parsed = createUserSchema.safeParse(req.body);
 
-  if (!parsed.success) {
-    return res.status(400).json({
-      error: parsed.error.issues[0]?.message || "invalid input",
-    });
-  }
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: parsed.error.issues[0]?.message || "invalid input",
+      });
+    }
 
-const { username } = parsed.data;
+    const { username } = parsed.data;
 
     const newUser = await createUser(username);
     res.status(201).json(newUser);

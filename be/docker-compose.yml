@@ -20,12 +20,8 @@ services:
     restart: unless-stopped
     depends_on:
       - postgres
-    environment:
-      #DB_URL: postgres://postgres:postgres@postgres:5432/leaderboard
-      #DB_URL: ${DB_URL}
-      PORT: 3001
     ports:
-      - "3001:3001"
+      - "${PORT}:${PORT}"
     volumes:
       - .:/app
       - /app/node_modules

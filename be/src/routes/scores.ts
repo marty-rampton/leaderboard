@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createScore } from "../db";
+import { createScore } from "../db/queries/scores";
 import { createScoreSchema } from "../validation/scores";
 
 const router = Router();
@@ -8,13 +8,13 @@ router.post("/", async (req, res) => {
   try {
     const parsed = createScoreSchema.safeParse(req.body);
 
-  if (!parsed.success) {
-    return res.status(400).json({
-      error: parsed.error.issues[0]?.message || "Invalid input",
-    });
-  }
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: parsed.error.issues[0]?.message || "Invalid input",
+      });
+    }
 
-const { userId, score } = parsed.data;
+    const { userId, score } = parsed.data;
 
     const newScore = await createScore(userId, score);
     res.status(201).json(newScore);

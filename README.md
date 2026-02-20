@@ -1,6 +1,43 @@
 # Leaderboard API
 
-Express + TypeScript + PostgreSQL backend for a simple game leaderboard.
+RESTful leaderboard backend built with Express, TypeScript, and PostgreSQL, featuring Dockerized local development and production-style database initialization.
+
+## Quick Start (Docker)
+
+cd be
+cp .env.docker.example .env.docker
+docker compose up --build
+
+Then open:
+
+http://localhost:3001/health
+
+## Purpose
+
+This project was built as a portfolio backend service to demonstrate professional backend development practices, including REST API design, relational database modeling, input validation, and containerized local development.
+
+It simulates a production-style leaderboard system for a game, supporting user creation, score submission, and leaderboard queries.
+
+## Engineering Practices Demonstrated
+
+- RESTful API design
+- Relational database schema design
+- Input validation and error handling
+- Environment-based configuration
+- Containerized development with Docker Compose
+- Database initialization via migration-style SQL scripts
+- Separation of concerns (routes, validation, database layers)
+
+## Architecture
+
+The service follows a typical layered backend structure:
+
+- **Routes**: Define HTTP endpoints
+- **Validation**: Zod schemas validate incoming requests
+- **Database layer**: PostgreSQL queries and schema management
+- **Docker Compose**: Provides reproducible local environment
+
+PostgreSQL initialization scripts automatically create tables and indexes when the container starts.
 
 ## Features
 

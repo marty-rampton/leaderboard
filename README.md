@@ -4,9 +4,11 @@ RESTful leaderboard backend built with Express, TypeScript, and PostgreSQL, feat
 
 ## Quick Start (Docker)
 
+```bash
 cd be
 cp .env.docker.example .env.docker
 docker compose up --build
+```
 
 Then open:
 
@@ -82,12 +84,12 @@ Example values:
 
 ```env
 PORT=3001
-DB_USER=postgres
-DB_HOST=localhost
-DB_URL=postgres://postgres:postgres@localhost:5432/leaderboard
-DB_NAME=leaderboard
-DB_PASSWORD=postgres
-DB_PORT=5432
+
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=leaderboard
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
 ```
 
 ## Run Locally (without Docker)

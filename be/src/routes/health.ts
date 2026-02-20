@@ -1,9 +1,21 @@
 import { Router } from "express";
+import { pool } from "../db";
 
 const router = Router();
 
-router.get("/", (req, res) => {
-  res.json({ status: "ok" });
+router.get("/", async (req, res) => {
+  try {
+    await pool.query("SELECT 1");
+    res.status(200).json({
+      status: "ok",
+      database: "connected"
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "error",
+      database: "disconnected"
+    });
+  }
 });
 
 export default router;

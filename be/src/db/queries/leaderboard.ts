@@ -1,4 +1,4 @@
-import { pool } from "../index"
+import { pool } from "../pool"
 
 export async function getLeaderboard(limit: number = 10) {
   const result = await pool.query(

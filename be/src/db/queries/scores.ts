@@ -1,4 +1,4 @@
-import { pool } from "../index";
+import { pool } from "../pool";
 
 
 export async function createScore(userId: number, score: number) {

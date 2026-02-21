@@ -1,4 +1,5 @@
 import express from "express";
+import morgan from "morgan";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -10,6 +11,8 @@ import leaderboardRouter from "./routes/leaderboard";
 import { pool } from "./db/pool";
 
 const app = express();
+
+app.use(morgan("dev"));
 
 app.use(express.json());
 
@@ -24,22 +27,30 @@ const server = app.listen(port, () => {
   console.log(`leaderboard server running on port ${port}`);
 });
 
-process.on("SIGTERM", async () => {
-  console.log("SIGTERM received, shutting down gracefully...");
-
-  server.close(async () => {
-    await pool.end();
-    console.log("HTTP server closed");
-    process.exit(0);
-  });
+server.on("close", () => {
+  console.log("Server fully closed");
 });
 
-process.on("SIGINT", async () => {
-  console.log("SIGINT received, shutting down gracefully...");
+let isShuttingDown = false;
 
-  server.close(async () => {
+async function shutdown(signal: string) {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+
+  console.log(`${signal} received, shutting down gracefully...`);
+
+  server.close();
+
+  try {
     await pool.end();
-    console.log("HTTP server closed");
+    console.log("Database pool closed");
+
     process.exit(0);
-  });
-});
+  } catch (err) {
+    console.error("Error during shutdown:", err);
+    process.exit(1);
+  }
+}
+
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
